@@ -6,6 +6,8 @@ DivLab9000:
 DivLab from The Division of Labor office on Anarres, which assigns individuals to syndicates and oversees rotation of roles (from The Dispossesed, by Ursula Le Guin).
 9000 from Hal9000, naturally.
 
+* Currently deployed for demo purposes at: [http://demobox.vps.webdock.cloud/](http://demobox.vps.webdock.cloud/)
+
 ## Setup
 
 Backend, from the repository root:

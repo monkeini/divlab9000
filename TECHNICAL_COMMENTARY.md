@@ -22,16 +22,17 @@ Document your decisions, trade-offs, and scope choices.
 * Present some high-level score if possible, then dig into the dimensions.
 
 ### Out of scope:
-* User accounts, persistent preferences etc.
+* User accounts, persistent preferences, shortlist of jobs etc.
 * UX for user to correct/update data extracted from CV
 * Asynchronous upload/update of CV/matches
+* Polish of UI or copy etc
 
 ### Tech choices
 * Python, uv, ruff, FastAPI for backend 
 * SQLlite for job data - nothing fancy needed here, keep it simple 
 * Vite + React + TypeScript for frontend, nothing too opinionated until we need to make a call on something that needs iterate
 * OpenRouter for LLM use, using free tier models 
-
+* Bog standard Ubuntu VPS with nginx for one-time deployment
 
 ## DevLog 
 
