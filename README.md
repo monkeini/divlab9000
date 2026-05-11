@@ -8,6 +8,72 @@ DivLab from The Division of Labor office on Anarres, which assigns individuals t
 
 * Currently deployed for demo purposes at: [http://demobox.vps.webdock.cloud/](http://demobox.vps.webdock.cloud/)
 
+## Architecture
+
+DivLab9000 is a small single-host app. The frontend is a static React build served by nginx. The backend is a FastAPI process managed by systemd, backed by SQLite and local retrieval index files. External APIs are only used for job scraping and LLM/OCR work.
+
+```mermaid
+flowchart LR
+    User[Browser] --> Nginx[Nginx]
+    Nginx --> Static[React static assets<br/>frontend/dist]
+    Nginx -->|/api/*| API[FastAPI<br/>jobs_api.main]
+
+    API --> DB[(SQLite<br/>jobs_data/jobs.sqlite3)]
+    API --> Indexes[(Local retrieval indexes<br/>BM25 tokens + dense embeddings)]
+    API --> OpenRouter[OpenRouter API<br/>CV OCR + LLM match analysis]
+
+    Scraper[Adzuna scrape script] --> Adzuna[Adzuna Jobs API]
+    Scraper --> DB
+    IndexBuilder[build_match_indexes.py] --> DB
+    IndexBuilder --> Indexes
+```
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as React UI
+    participant API as FastAPI
+    participant DB as SQLite
+    participant IDX as Local indexes
+    participant OR as OpenRouter
+
+    U->>FE: Upload PDF CV
+    FE->>API: POST /cvs/upload
+    API->>OR: OCR + structured extraction
+    API->>DB: Store cv_documents row
+    API-->>FE: CV profile
+
+    U->>FE: Save preferences
+    FE->>API: PATCH /cvs/{id}/preferences
+    API->>DB: Update cv_documents preferences
+
+    U->>FE: Begin Match
+    FE->>API: POST /cvs/{id}/matches
+    API->>IDX: Ensure/load BM25 + embeddings
+    API->>DB: Read CV + jobs
+    API->>API: Hybrid BM25 + dense retrieval
+    API->>DB: Store cv_match_runs + cv_job_matches
+    API-->>FE: Top retrieval candidates
+
+    U->>FE: Dig deeper
+    FE->>API: GET /cvs/{id}/matches/{run_id}/{match_id}
+    API->>DB: Load match + full job + stored analysis
+    API-->>FE: Detail page data
+    alt No stored analysis
+        FE->>API: POST /cvs/{id}/matches/{run_id}/{match_id}/analysis
+        API->>OR: LLM fit analysis
+        API->>DB: Store cv_match_analyses
+        API-->>FE: Stored analysis
+    end
+```
+
+Key generated/local artifacts:
+
+- `jobs_data/jobs.sqlite3`: source of truth for jobs, CVs, match runs, and analyses.
+- `jobs_data/indexes/bm25_tokens.pkl`: cached BM25 token corpus and job id ordering.
+- `jobs_data/indexes/dense_embeddings.npy`: cached local job embedding matrix.
+- `jobs_data/indexes/metadata.json`: corpus fingerprint and embedding model metadata.
+
 ## Setup
 
 Backend, from the repository root:
