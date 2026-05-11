@@ -14,7 +14,18 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "rank-bm25>=0.2.2",
     "sentence-transformers>=3.0.0",
+    "torch>=2.7.0",
     "uvicorn[standard]>=0.30.0",
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", marker = "platform_system == 'Linux'" },
 ]
 
 [dependency-groups]
